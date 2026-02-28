@@ -3,23 +3,78 @@ const connectDB = require("./config/database");
 const User = require("./models/userSchema");
 
 const app = express();
+app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  const userObj = {
-    firstName: "abc",
-    lastName: "def",
-    age: 99,
-    gender: "male",
-    profession: "unemployed",
-  };
-
-  const user = new User(userObj);
-
+  const user = new User(req.body);
   try {
     await user.save();
-    res.send("User created successfully");
-  } catch (err) {
-    res.status(400).send("Couldn't save the user");
+    res.send("user created successfully");
+  } catch (error) {
+    res.status(400).send("something went wrong while createing the user");
+  }
+});
+
+app.get("/user", async (req, res) => {
+  const userId = req.body?.userId;
+
+  const user = await User.findById(userId);
+  try {
+    if (user) {
+      res.send(user);
+    } else {
+      res.status(404).send("user not found");
+    }
+  } catch (error) {
+    res.status(400).send("cant get user data");
+  }
+});
+
+app.get("/users", async (req, res) => {
+  const users = await User.find({});
+
+  try {
+    if (users) {
+      res.send(users);
+    } else {
+      res.status(404).send("cant get users data");
+    }
+  } catch (error) {
+    res.status(400).send("users data not found");
+  }
+});
+
+app.delete("/user", async (req, res) => {
+  const userProfession = req.body?.profession;
+
+  const user = await User.findOneAndDelete({ profession: userProfession });
+
+  try {
+    if (user) {
+      res.send(`user with ${userProfession} deleted successfully`);
+    } else {
+      res.status(404).send("such user not found, check again!");
+    }
+  } catch (error) {
+    res.status(400).send("something went wrong while deleting the user");
+  }
+});
+
+app.patch("/user", async (req, res) => {
+  const userProfession = req.body?.profession;
+  const userData = req.body;
+  const user = await User.findOneAndUpdate(
+    { profession: userProfession },
+    userData,
+  );
+  try {
+    if (user) {
+      res.send("user updated successfully");
+    } else {
+      res.status(400).send("user not found");
+    }
+  } catch (error) {
+    res.status(400).send("error while updating the user");
   }
 });
 
