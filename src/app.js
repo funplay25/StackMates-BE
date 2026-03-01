@@ -11,7 +11,9 @@ app.post("/signup", async (req, res) => {
     await user.save();
     res.send("user created successfully");
   } catch (error) {
-    res.status(400).send("something went wrong while createing the user");
+    res
+      .status(400)
+      .send("something went wrong while createing the user" + error.message);
   }
 });
 
@@ -61,12 +63,11 @@ app.delete("/user", async (req, res) => {
 });
 
 app.patch("/user", async (req, res) => {
-  const userProfession = req.body?.profession;
+  const userProfession = req.body?.userId;
   const userData = req.body;
-  const user = await User.findOneAndUpdate(
-    { profession: userProfession },
-    userData,
-  );
+  const user = await User.findOneAndUpdate({ _id: userProfession }, userData, {
+    runValidators: true,
+  });
   try {
     if (user) {
       res.send("user updated successfully");
