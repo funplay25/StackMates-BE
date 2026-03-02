@@ -1,25 +1,33 @@
 const express = require("express");
 const connectDB = require("./config/database");
 const User = require("./models/userSchema");
-const validator = require("validator");
+const bcrypt = require("bcrypt");
+const validateSignUpData = require("./utils/validate");
 
 const app = express();
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  const user = new User(req.body);
   try {
-    if (!validator.isStrongPassword(user.password, { minLength: 6 })) {
-      throw new Error(
-        "Please type a strong password containing at least 6 characters",
-      );
-    }
+    validateSignUpData(req);
+
+    const { firstName, lastName, email, password } = req.body;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+    });
+
     await user.save();
     res.send("user created successfully");
   } catch (error) {
     res
       .status(400)
-      .send(`something went wrong while createing the user: ${error.message}`);
+      .send(`something went wrong while creating the user: ${error.message}`);
   }
 });
 
