@@ -1,6 +1,7 @@
 const express = require("express");
 const connectDB = require("./config/database");
 const User = require("./models/userSchema");
+const validator = require("validator");
 
 const app = express();
 app.use(express.json());
@@ -8,12 +9,17 @@ app.use(express.json());
 app.post("/signup", async (req, res) => {
   const user = new User(req.body);
   try {
+    if (!validator.isStrongPassword(user.password, { minLength: 6 })) {
+      throw new Error(
+        "Please type a strong password containing at least 6 characters",
+      );
+    }
     await user.save();
     res.send("user created successfully");
   } catch (error) {
     res
       .status(400)
-      .send("something went wrong while createing the user" + error.message);
+      .send(`something went wrong while createing the user: ${error.message}`);
   }
 });
 
@@ -65,17 +71,31 @@ app.delete("/user", async (req, res) => {
 app.patch("/user", async (req, res) => {
   const userProfession = req.body?.userId;
   const userData = req.body;
-  const user = await User.findOneAndUpdate({ _id: userProfession }, userData, {
-    runValidators: true,
-  });
+  const doesContainEmail = Object.values(userData).includes(req.body?.email);
+
   try {
+    if (doesContainEmail) {
+      throw new Error("cant update user email");
+    }
+
+    if (userData?.skills.length > 5) {
+      throw new Error("Maximum 5 skills allowed");
+    }
+
+    const user = await User.findOneAndUpdate(
+      { _id: userProfession },
+      userData,
+      {
+        runValidators: true,
+      },
+    );
     if (user) {
       res.send("user updated successfully");
     } else {
       res.status(400).send("user not found");
     }
   } catch (error) {
-    res.status(400).send("error while updating the user");
+    res.status(400).send(`error while updating the user : ${error.message}`);
   }
 });
 

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 
 const { Schema } = mongoose;
 
@@ -21,17 +22,34 @@ const userSchema = new Schema(
       required: true,
       unique: true,
       lowercase: true,
-      match: /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$/gm,
+      validate(v) {
+        if (!validator.isEmail(v)) {
+          throw new Error("Invalid email address");
+        }
+      },
       immutable: true,
+      select: false,
     },
     password: {
-      type: Number,
+      type: String,
       required: true,
-      min: 6,
+      minLength: 6,
+      maxLength: 128,
+      select: false,
+    },
+    profileUrl: {
+      type: String,
+      trim: true,
+      validate(v) {
+        if (!validator.isURL(v)) {
+          throw new Error("Invalid profile URL");
+        }
+      },
     },
     age: {
       type: Number,
       min: 18,
+      max: 100,
     },
     gender: {
       type: String,
