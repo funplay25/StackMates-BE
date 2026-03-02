@@ -1,11 +1,15 @@
+require("dotenv").config();
 const express = require("express");
 const connectDB = require("./config/database");
 const User = require("./models/userSchema");
 const bcrypt = require("bcrypt");
-const validateSignUpData = require("./utils/validate");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const { validateSignUpData } = require("./utils/validate");
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
   try {
@@ -40,6 +44,11 @@ app.get("/login", async (req, res) => {
       const isMatch = await bcrypt.compare(password, validUser.password);
 
       if (isMatch) {
+        const cookie = jwt.sign(
+          { _id: validUser._id },
+          process.env.COOKIE_SECRET,
+        );
+        res.cookie("token", cookie);
         res.send("Login successfull");
       } else {
         throw new Error("Invalid credentials");
@@ -49,6 +58,22 @@ app.get("/login", async (req, res) => {
     }
   } catch (err) {
     res.status(400).send(`ERROR : ${err.message}`);
+  }
+});
+
+app.get("/profile", async (req, res) => {
+  try {
+    const { token } = req.cookies;
+
+    if (!token) {
+      throw new Error("Please login first");
+    } else {
+      const cookieVerify = jwt.verify(token, process.env.COOKIE_SECRET);
+      const userData = await User.findOne({ _id: cookieVerify._id });
+      res.send(userData);
+    }
+  } catch (err) {
+    res.status(400).send(`ERROR: ${err.message}`);
   }
 });
 
