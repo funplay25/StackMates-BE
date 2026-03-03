@@ -24,4 +24,35 @@ const validateSignUpData = (req) => {
   }
 };
 
-module.exports = { validateSignUpData };
+const validateProfileData = async (req) => {
+  const eligibleValidateFields = [
+    "firstName",
+    "lastName",
+    "age",
+    "gender",
+    "photoUrl",
+    "skills",
+    "about",
+  ];
+
+  try {
+    const loggedInUser = req.user;
+
+    const isUpdateEligible = Object.keys(req.body).every((field) =>
+      eligibleValidateFields.includes(field),
+    );
+
+    if (isUpdateEligible) {
+      Object.keys(req.body).forEach(
+        (field) => (loggedInUser[field] = req.body[field]),
+      );
+      await loggedInUser.save();
+    } else {
+      throw new Error("update is not valid");
+    }
+  } catch (err) {
+    throw new Error(`ERROR : ${err.message}`);
+  }
+};
+
+module.exports = { validateSignUpData, validateProfileData };

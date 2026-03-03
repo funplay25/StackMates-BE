@@ -4,66 +4,14 @@ const connectDB = require("./config/database");
 const User = require("./models/userSchema");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const { validateSignUpData } = require("./utils/validate");
-const { userAuth } = require("./middlewares/auth");
+const authRouter = require("./routes/authRouter");
+const profileRouter = require("./routes/profileRouter");
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-
-app.post("/signup", async (req, res) => {
-  try {
-    validateSignUpData(req);
-
-    const { firstName, lastName, email, password } = req.body;
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = new User({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-    });
-
-    await user.save();
-    res.send("user created successfully");
-  } catch (error) {
-    res
-      .status(400)
-      .send(`something went wrong while creating the user: ${error.message}`);
-  }
-});
-
-app.get("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const validUser = await User.findOne({ email }).select("+password");
-
-    if (!validUser) {
-      throw new Error("Invalid credentials");
-    }
-
-    await validUser.validatePassword(password);
-
-    const cookie = await validUser.getToken();
-    res.cookie("token", cookie, {
-      expires: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
-    });
-
-    res.send("Login successfull");
-  } catch (err) {
-    res.status(400).send(`ERROR : ${err.message}`);
-  }
-});
-
-app.get("/profile", userAuth, async (req, res) => {
-  try {
-    res.send(req.user);
-  } catch (err) {
-    res.status(400).send(`ERROR: ${err.message}`);
-  }
-});
+app.use("/", authRouter);
+app.use("/", profileRouter);
 
 app.get("/user", async (req, res) => {
   const userId = req.body?.userId;
