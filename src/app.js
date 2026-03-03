@@ -4,8 +4,8 @@ const connectDB = require("./config/database");
 const User = require("./models/userSchema");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
 const { validateSignUpData } = require("./utils/validate");
+const { userAuth } = require("./middlewares/auth");
 
 const app = express();
 app.use(express.json());
@@ -40,38 +40,26 @@ app.get("/login", async (req, res) => {
     const { email, password } = req.body;
     const validUser = await User.findOne({ email }).select("+password");
 
-    if (validUser) {
-      const isMatch = await bcrypt.compare(password, validUser.password);
-
-      if (isMatch) {
-        const cookie = jwt.sign(
-          { _id: validUser._id },
-          process.env.COOKIE_SECRET,
-        );
-        res.cookie("token", cookie);
-        res.send("Login successfull");
-      } else {
-        throw new Error("Invalid credentials");
-      }
-    } else {
+    if (!validUser) {
       throw new Error("Invalid credentials");
     }
+
+    await validUser.validatePassword(password);
+
+    const cookie = await validUser.getToken();
+    res.cookie("token", cookie, {
+      expires: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+    });
+
+    res.send("Login successfull");
   } catch (err) {
     res.status(400).send(`ERROR : ${err.message}`);
   }
 });
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const { token } = req.cookies;
-
-    if (!token) {
-      throw new Error("Please login first");
-    } else {
-      const cookieVerify = jwt.verify(token, process.env.COOKIE_SECRET);
-      const userData = await User.findOne({ _id: cookieVerify._id });
-      res.send(userData);
-    }
+    res.send(req.user);
   } catch (err) {
     res.status(400).send(`ERROR: ${err.message}`);
   }

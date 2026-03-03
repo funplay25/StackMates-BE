@@ -1,5 +1,8 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 const { Schema } = mongoose;
 
@@ -69,6 +72,30 @@ const userSchema = new Schema(
   },
   { timestamps: true },
 );
+
+userSchema.methods.getToken = async function () {
+  const user = this;
+  const userToken = jwt.sign({ _id: user._id }, process.env.COOKIE_SECRET, {
+    expiresIn: "7d",
+  });
+
+  if (!userToken) {
+    throw new Error("User no longer exists");
+  }
+
+  return userToken;
+};
+
+userSchema.methods.validatePassword = async function (passwordGivenByUser) {
+  const user = this;
+  const isMatch = await bcrypt.compare(passwordGivenByUser, user.password);
+
+  if (isMatch) {
+    return true;
+  } else {
+    return false;
+  }
+};
 
 const User = mongoose.model("User", userSchema);
 
