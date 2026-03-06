@@ -111,7 +111,7 @@ requestRouter.post(
     } catch (err) {
       return res
         .status(500)
-        .json({ success: false, message: "Somethign went wrong!" });
+        .json({ success: false, message: "Something went wrong!" });
     }
   },
 );

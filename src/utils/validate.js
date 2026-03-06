@@ -30,7 +30,7 @@ const validateProfileData = async (req) => {
     "lastName",
     "age",
     "gender",
-    "photoUrl",
+    "profileUrl",
     "skills",
     "about",
   ];
