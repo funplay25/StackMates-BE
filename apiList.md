@@ -12,7 +12,11 @@
 
 ## requestRouter
 
-- POST /request/sent/:userId
-- GET /request/accepted
-- GET /request/rejected
-- POST /request/ignored
+- POST /request/:status/:toUserId // here status will be either ignored OR interested
+- POST /request/review/:status/:requestId // here status will be either accepted OR rejected
+
+## userRouter
+
+- GET /user/requests/received
+- GET /user/connections
+- GET /user/feed
