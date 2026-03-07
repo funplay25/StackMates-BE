@@ -1,6 +1,7 @@
 const express = require("express");
 const { userAuth } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequestSchema");
+const User = require("../models/userSchema");
 
 const userRouter = express.Router();
 
@@ -55,7 +56,40 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
       }
     });
 
-    return res.status(200).json({ success: false, message: dataToSend });
+    return res.status(200).json({ success: true, message: dataToSend });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+userRouter.get("/feed", userAuth, async (req, res) => {
+  const loggedInUser = req.user;
+
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+
+    const skip = (page - 1) * limit;
+
+    const connectionRequests = await ConnectionRequest.find({
+      $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
+    }).select("fromUserId toUserId");
+
+    let hiddenUsersArr = new Set();
+
+    await connectionRequests.map((req) => {
+      hiddenUsersArr.add(req.fromUserId._id.toString());
+      hiddenUsersArr.add(req.toUserId._id.toString());
+    });
+
+    const eligibleFeedData = await User.find({
+      _id: { $nin: Array.from(hiddenUsersArr), $ne: loggedInUser._id },
+    })
+      .select(USER_DATA_TO_SEND)
+      .skip(skip)
+      .limit(limit);
+
+    return res.status(200).json({ success: true, data: eligibleFeedData });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
