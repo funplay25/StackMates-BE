@@ -30,10 +30,10 @@ authRouter.post("/signup", async (req, res) => {
   }
 });
 
-authRouter.get("/login", async (req, res) => {
+authRouter.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const validUser = await User.findOne({ email }).select("+password");
+    const validUser = await User.findOne({ email: email }).select("+password");
 
     if (!validUser) {
       throw new Error("Invalid credentials");
@@ -52,7 +52,7 @@ authRouter.get("/login", async (req, res) => {
       expires: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
     });
 
-    res.json({ success: true, message: "Logged in successfully" });
+    res.json({ success: true, data: validUser });
   } catch (err) {
     res.status(400).json({ success: false, message: `ERROR : ${err.message}` });
   }
