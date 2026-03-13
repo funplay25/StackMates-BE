@@ -9,18 +9,20 @@ const profileRouter = express.Router();
 
 profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
-    res.send(req.user);
+    return res.send({ success: true, data: req.user });
   } catch (err) {
-    res.status(400).json({ success: false, message: `ERROR: ${err.message}` });
+    return res
+      .status(400)
+      .json({ success: false, message: `ERROR: ${err.message}` });
   }
 });
 
 profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   try {
     await validateProfileData(req);
-    res.send(`${req.user.firstName} your profile is successfully updated.`);
+    return res.send({ success: true, data: req.user });
   } catch (err) {
-    res.status(401).json({ success: false, message: err.message });
+    return res.status(401).json({ success: false, message: err.message });
   }
 });
 
