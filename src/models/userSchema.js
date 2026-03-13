@@ -43,6 +43,8 @@ const userSchema = new Schema(
     profileUrl: {
       type: String,
       trim: true,
+      default:
+        "https://i.pinimg.com/1200x/0d/64/98/0d64989794b1a4c9d89bff571d3d5842.jpg",
       validate(v) {
         if (!validator.isURL(v)) {
           throw new Error("Invalid profile URL");
