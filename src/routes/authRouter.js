@@ -23,9 +23,9 @@ authRouter.post("/signup", async (req, res) => {
     await user.save();
     res.json({ success: true, message: "user created successfully" });
   } catch (error) {
-    res.status(400).josn({
+    res.status(400).json({
       success: false,
-      message: `something went wrong while creating the user: ${error.message}`,
+      message: error.message,
     });
   }
 });
@@ -60,7 +60,7 @@ authRouter.post("/login", async (req, res) => {
 
 authRouter.post("/logout", async (req, res) => {
   try {
-    res.cookie("token", null, { expires: new Date(Date.now()) });
+    res.clearCookie("token", { httpOnly: true });
     res.send(`logged out successfully`);
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
