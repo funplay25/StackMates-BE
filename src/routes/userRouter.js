@@ -5,7 +5,8 @@ const User = require("../models/userSchema");
 
 const userRouter = express.Router();
 
-const USER_DATA_TO_SEND = "firstName lastName skills gender age about";
+const USER_DATA_TO_SEND =
+  "firstName lastName skills gender age about profileUrl";
 
 userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   const loggedInUser = req.user;
