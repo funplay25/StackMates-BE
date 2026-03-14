@@ -22,7 +22,7 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
         .json({ success: false, message: "Connection request not found." });
     }
 
-    return res.status(200).json({ success: true, message: connectionRequests });
+    return res.status(200).json({ success: true, data: connectionRequests });
   } catch (err) {
     return res
       .status(500)
@@ -57,7 +57,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
       }
     });
 
-    return res.status(200).json({ success: true, message: dataToSend });
+    return res.status(200).json({ success: true, data: dataToSend });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }

@@ -107,7 +107,7 @@ requestRouter.post(
 
       const data = await connectionRequest.save();
 
-      return res.status(200).json({ success: true, message: data });
+      return res.status(200).json({ success: true, data: data });
     } catch (err) {
       return res
         .status(500)
