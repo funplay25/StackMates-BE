@@ -20,8 +20,15 @@ authRouter.post("/signup", async (req, res) => {
       password: hashedPassword,
     });
 
-    await user.save();
-    res.json({ success: true, message: "user created successfully" });
+    const signedUser = await user.save();
+    const token = await signedUser.getToken();
+
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+    });
+
+    return res.json({ success: true, data: signedUser });
   } catch (error) {
     res.status(400).json({
       success: false,
@@ -47,12 +54,13 @@ authRouter.post("/login", async (req, res) => {
         .json({ success: false, message: "invalid credentials" });
     }
 
-    const cookie = await validUser.getToken();
-    res.cookie("token", cookie, {
+    const token = await validUser.getToken();
+    res.cookie("token", token, {
       expires: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
     });
 
-    res.json({ success: true, data: validUser });
+    return res.json({ success: true, data: validUser });
   } catch (err) {
     res.status(400).json({ success: false, message: `ERROR : ${err.message}` });
   }
