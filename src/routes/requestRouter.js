@@ -3,6 +3,7 @@ const { userAuth } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequestSchema");
 const User = require("../models/userSchema");
 const mongoose = require("mongoose");
+const sendEmail = require("../utils/sendEmail");
 
 const requestRouter = express.Router();
 
@@ -60,6 +61,10 @@ requestRouter.post("/request/:status/:toUserId", userAuth, async (req, res) => {
     });
 
     await connectionRequest.save();
+
+    const emailRes = await sendEmail.run();
+    console.log(emailRes);
+
     return res.json({
       success: true,
       message: `Connection request sent`,
