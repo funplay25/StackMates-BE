@@ -1,4 +1,3 @@
-require("dotenv").config();
 const mongoose = require("mongoose");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
@@ -63,6 +62,7 @@ const userSchema = new Schema(
           throw new Error("this gender isn't valid");
         }
       },
+      default: "male",
     },
     skills: {
       type: [String],
