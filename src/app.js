@@ -2,13 +2,14 @@ require("dotenv").config();
 const express = require("express");
 const connectDB = require("./config/database");
 const User = require("./models/userSchema");
-const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const authRouter = require("./routes/authRouter");
 const profileRouter = require("./routes/profileRouter");
 const requestRouter = require("./routes/requestRouter");
 const userRouter = require("./routes/userRouter");
 const cors = require("cors");
+const { createServer } = require("http");
+const initializeSocket = require("./utils/socket");
 
 const app = express();
 
@@ -24,6 +25,10 @@ app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
+
+const server = createServer(app);
+
+initializeSocket(server);
 
 app.get("/user", async (req, res) => {
   const userId = req.body?.userId;
@@ -104,7 +109,7 @@ app.patch("/user", async (req, res) => {
 connectDB()
   .then(() => {
     console.log("connected to DB successfully");
-    app.listen(3000, () => {
+    server.listen(3000, () => {
       console.log(`Backend started on port 3000`);
     });
   })
