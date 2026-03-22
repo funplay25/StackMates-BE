@@ -64,8 +64,8 @@ requestRouter.post("/request/:status/:toUserId", userAuth, async (req, res) => {
 
     if (status === "interested") {
       try {
-        const emailRes = await sendEmail.run();
-        console.log(emailRes);
+        // const emailRes = await sendEmail.run();
+        // console.log(emailRes);
       } catch (err) {
         console.error("Email sending failed (non critical):", err.message);
       }
