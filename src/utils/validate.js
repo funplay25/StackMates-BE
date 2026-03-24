@@ -1,3 +1,5 @@
+// not under use in website
+
 const validator = require("validator");
 
 const validateSignUpData = (req) => {
